@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/blog/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/blog/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/blog/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/blog/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/blog/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="虚拟主机匹配规则当一个名称被多个虚拟主机的server_name匹配成功，优先级规则如下：  准确匹配server_name 通配符在开始时匹配server_name成功 通配符在结尾时匹配server_name成功 正则表达式匹配server_name成功  在以上匹配中，如果server_name被处于同一优先级的匹配方式多次匹配成功，则首次匹配成功的虚拟主机处理请求 #location块配置">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx匹配规则">
+<meta property="og:url" content="http://yoursite.com/2018/06/25/nginx_rule/index.html">
+<meta property="og:site_name" content="博客">
+<meta property="og:description" content="虚拟主机匹配规则当一个名称被多个虚拟主机的server_name匹配成功，优先级规则如下：  准确匹配server_name 通配符在开始时匹配server_name成功 通配符在结尾时匹配server_name成功 正则表达式匹配server_name成功  在以上匹配中，如果server_name被处于同一优先级的匹配方式多次匹配成功，则首次匹配成功的虚拟主机处理请求 #location块配置">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-06-24T04:27:14.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nginx匹配规则">
+<meta name="twitter:description" content="虚拟主机匹配规则当一个名称被多个虚拟主机的server_name匹配成功，优先级规则如下：  准确匹配server_name 通配符在开始时匹配server_name成功 通配符在结尾时匹配server_name成功 正则表达式匹配server_name成功  在以上匹配中，如果server_name被处于同一优先级的匹配方式多次匹配成功，则首次匹配成功的虚拟主机处理请求 #location块配置">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/blog/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/25/nginx_rule/"/>
+
+
+
+
+
+  <title>nginx匹配规则 | 博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/blog/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/blog/2018/06/25/nginx_rule/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="D.X">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">nginx匹配规则</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-25T15:25:15+08:00">
+                2018-06-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="虚拟主机匹配规则"><a href="#虚拟主机匹配规则" class="headerlink" title="虚拟主机匹配规则"></a>虚拟主机匹配规则</h1><p>当一个名称被多个虚拟主机的server_name匹配成功，优先级规则如下：</p>
+<ol>
+<li>准确匹配server_name</li>
+<li>通配符在开始时匹配server_name成功</li>
+<li>通配符在结尾时匹配server_name成功</li>
+<li>正则表达式匹配server_name成功</li>
+</ol>
+<p>在以上匹配中，如果server_name被处于同一优先级的匹配方式多次匹配成功，则首次匹配成功的虚拟主机处理请求</p>
+<p>#location块配置<br>location [<font style="color:red;"> =</font> | <font style="color:red;"> ~</font> | <font style="color:red;"> ~*</font> | <font style="color:red;"> ^~</font> ] url {…}<br>url——待匹配的请求字符串<table><tr><td>不含正则表达</td><td>标准url</td></tr><tr><td>含正则表达</td><td>正则url</td></tr></table></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[]中的4种标识为可选项，</span><br></pre></td></tr></table></figure>
+<ul>
+<li>不加时，niginx服务器首先在server块的多个location块中搜索是否有标准url和请求的字符串匹配，如果有多个可以匹配，就<font style="color:red">记录</font>匹配最高的一个。然后，服务器再用location块中的正则url和请求的字符串匹配，<font style="color:red">当第一个正则url匹配成功，结束搜索</font>，并用这个location块处理此请求；如果正则匹配全部失败，就用刚才记录的匹配度最高的location块处理些请求。</li>
+<li>“=” 用于标准url前面，要求请求字符串与url严格匹配，如果匹配成功，停止向下搜索并立即处理此请求。</li>
+<li>“~” 用于表示url包含正则表达式，并且<strong>区分</strong>大小写。</li>
+<li><p>“~*”  用于表示url包含正则表达式，<strong>不区分</strong>大小写。</p>
+  <font style="color:red">url包含正则表达式必须用~或~*处理</font></li>
+<li>“^~” 用于标准url之前，要求Niginx服务器找到标识url和请求字符串匹配度最高的location后，立即使用此location处理请求，而不再使用location块中的正则url和请求字符串做匹配。 </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">location  = / &#123;</span><br><span class="line">  # 精确匹配 / ，主机名后面不能带任何字符串</span><br><span class="line">  [ configuration A ]</span><br><span class="line">&#125;</span><br><span class="line">location  / &#123;</span><br><span class="line">  # 因为所有的地址都以 / 开头，所以这条规则将匹配到所有请求</span><br><span class="line">  # 但是正则和最长字符串会优先匹配</span><br><span class="line">  [ configuration B ]</span><br><span class="line">&#125;</span><br><span class="line">location /documents/ &#123;</span><br><span class="line">  # 匹配任何以 /documents/ 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">  # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">  [ configuration C ]</span><br><span class="line">&#125;</span><br><span class="line">location ~ /documents/Abc &#123;</span><br><span class="line">  # 匹配任何以 /documents/Abc 开头的地址，匹配符合以后，还要继续往下搜索</span><br><span class="line">  # 只有后面的正则表达式没有匹配到时，这一条才会采用这一条</span><br><span class="line">  [ configuration CC ]</span><br><span class="line">&#125;</span><br><span class="line">location ^~ /images/ &#123;</span><br><span class="line">  # 匹配任何以 /images/ 开头的地址，匹配符合以后，停止往下搜索正则，采用这一条。</span><br><span class="line">  [ configuration D ]</span><br><span class="line">&#125;</span><br><span class="line">location ~* \.(gif|jpg|jpeg)$ &#123;</span><br><span class="line">  # 匹配所有以 gif,jpg或jpeg 结尾的请求</span><br><span class="line">  # 然而，所有请求 /images/ 下的图片会被 config D 处理，因为 ^~ 到达不了这一条正则</span><br><span class="line">  [ configuration E ]</span><br><span class="line">&#125;</span><br><span class="line">location /images/ &#123;</span><br><span class="line">  # 字符匹配到 /images/，继续往下，会发现 ^~ 存在</span><br><span class="line">  [ configuration F ]</span><br><span class="line">&#125;</span><br><span class="line">location /images/abc &#123;</span><br><span class="line">  # 最长字符匹配到 /images/abc，继续往下，会发现 ^~ 存在</span><br><span class="line">  # F与G的放置顺序是没有关系的</span><br><span class="line">  [ configuration G ]</span><br><span class="line">&#125;</span><br><span class="line">location ~ /images/abc/ &#123;</span><br><span class="line">  # 只有去掉 config D 才有效：先最长匹配 config G 开头的地址，继续往下搜索，匹配到这一条正则，采用</span><br><span class="line">    [ configuration H ]</span><br><span class="line">&#125;</span><br><span class="line">location ~* /js/.*/\.js</span><br></pre></td></tr></table></figure>
+<ul>
+<li>以=开头表示精确匹配,如 A 中只匹配根目录结尾的请求，后面不能带任何字符串。</li>
+<li>^~ 开头表示uri以某个常规字符串开头，不是正则匹配</li>
+<li>~ 开头表示区分大小写的正则匹配;</li>
+<li>~* 开头表示不区分大小写的正则匹配</li>
+<li>/ 通用匹配, 如果没有其它匹配,任何请求都会匹配到</li>
+</ul>
+<p>顺序 no优先级：<br>(location =) &gt; (location 完整路径) &gt; (location ^~ 路径) &gt; (location ~,~* 正则顺序) &gt; (location 部分起始路径) &gt; (/)</p>
+<p>上面的匹配结果<br>按照上面的location写法，以下的匹配示例成立：</p>
+<p>/ -&gt; config A<br>精确完全匹配，即使/index.html也匹配不了<br>/downloads/download.html -&gt; config B<br>匹配B以后，往下没有任何匹配，采用B<br>/images/1.gif -&gt; configuration D<br>匹配到F，往下匹配到D，停止往下<br>/images/abc/def -&gt; config D<br>最长匹配到G，往下匹配D，停止往下<br>你可以看到 任何以/images/开头的都会匹配到D并停止，FG写在这里是没有任何意义的，H是永远轮不到的，这里只是为了说明匹配顺序<br>/documents/document.html -&gt; config C<br>匹配到C，往下没有任何匹配，采用C<br>/documents/1.jpg -&gt; configuration E<br>匹配到C，往下正则匹配到E<br>/documents/Abc.jpg -&gt; config CC<br>最长匹配到C，往下正则顺序匹配到CC，不会往下到E</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/blog/2018/06/25/nginx_conf/" rel="prev" title="nginx配置">
+                nginx配置 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">D.X</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/blog/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#虚拟主机匹配规则"><span class="nav-number">1.</span> <span class="nav-text">虚拟主机匹配规则</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">D.X</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/blog/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/blog/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/blog/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/blog/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/blog/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/blog/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
